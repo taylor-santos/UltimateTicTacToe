@@ -1,0 +1,5 @@
+﻿------ Build started: Project: UltimateTicTacToe, Configuration: Debug Win32 ------
+  main.cpp
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(114): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  UltimateTicTacToe.vcxproj -> C:\Users\Taylor\Documents\GitHub\UltimateTicTacToe\Debug\UltimateTicTacToe.exe
+========== Build: 1 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========

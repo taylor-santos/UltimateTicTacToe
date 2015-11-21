@@ -1,3 +1,5 @@
 ﻿  main.cpp
-c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(6): warning C4244: 'argument': conversion from 'float' to 'unsigned int', possible loss of data
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(116): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(200): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(201): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
   UltimateTicTacToe.vcxproj -> C:\Users\Taylor\Documents\GitHub\UltimateTicTacToe\Debug\UltimateTicTacToe.exe
