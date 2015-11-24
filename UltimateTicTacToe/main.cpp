@@ -212,6 +212,11 @@ struct move {
 	bool enemysNextMoveWinsGame;
 	bool enemysNextMoveBlocksTwo;
 	bool willWinGame;
+	bool needGridToWin;
+	bool enemyNeedsGridToWin;
+	bool doNotNeedGrid;
+	bool enemyDoesNotNeedGrid;
+	bool enemyNextMoveIsGood;
 	move()
 	{
 		willWinGrid = false;
@@ -489,7 +494,7 @@ int main()
 	
 	Font font;
 
-//	font.loadFromFile("Roboto-Light.ttf");
+	//font.loadFromFile("Roboto-Light.ttf");
 	
 	Text text;
 	text.setFont(font);
@@ -534,7 +539,7 @@ int main()
 			if (event.type == sf::Event::Closed)
 				window.close();
 		}
-		if (currPlayer == 0 && clock.getElapsedTime() >= seconds(0.2f))
+		if (currPlayer == 0 && clock.getElapsedTime() >= seconds(0.1f))
 		{
 			if (board->winner == 0)// && Mouse::isButtonPressed(Mouse::Left))
 			{
@@ -552,17 +557,22 @@ int main()
 							moves[boxIndex]->box = boxes[i];
 							moves[boxIndex]->willWinGrid = moves[boxIndex]->box->willWinGrid(currPlayer + 1);
 							moves[boxIndex]->blocksEnemy = moves[boxIndex]->box->willWinGrid(!currPlayer + 1);
+							moves[boxIndex]->willWinGame = moves[boxIndex]->box->parentGrid->canWinGame(currPlayer + 1);
 							moves[boxIndex]->box->owner = currPlayer + 1;
 							moves[boxIndex]->givesEnemyNextGrid = board->grids[(int)boxes[i]->pos.x][(int)boxes[i]->pos.y]->checkTwoInARow(!currPlayer + 1);
 							moves[boxIndex]->allowsEnemyToBlock = board->grids[(int)boxes[i]->pos.x][(int)boxes[i]->pos.y]->checkTwoInARow(currPlayer + 1);
-							moves[boxIndex]->enemysNextMoveWinsGame = board->grids[(int)boxes[i]->pos.x][(int)boxes[i]->pos.y]->canWinGame(!currPlayer + 1);
-							moves[boxIndex]->enemysNextMoveBlocksTwo = board->grids[(int)boxes[i]->pos.x][(int)boxes[i]->pos.y]->canWinGame(currPlayer + 1);
-							moves[boxIndex]->willWinGame = moves[boxIndex]->box->parentGrid->canWinGame(currPlayer + 1);
+								moves[boxIndex]->enemysNextMoveWinsGame = board->grids[(int)boxes[i]->pos.x][(int)boxes[i]->pos.y]->canWinGame(!currPlayer + 1);
+								moves[boxIndex]->enemysNextMoveBlocksTwo = board->grids[(int)boxes[i]->pos.x][(int)boxes[i]->pos.y]->canWinGame(currPlayer + 1);
+							if (board->grids[(int)boxes[i]->pos.x][(int)boxes[i]->pos.y]->owner != 0)
+								moves[boxIndex]->opensBoardForEnemy = true;
+							moves[boxIndex]->needGridToWin = board->grids[(int)boxes[i]->pos.x][(int)boxes[i]->pos.y]->canWinGame(currPlayer + 1);
+							moves[boxIndex]->enemyNeedsGridToWin = board->grids[(int)boxes[i]->pos.x][(int)boxes[i]->pos.y]->canWinGame(!currPlayer + 1);
+							moves[boxIndex]->doNotNeedGrid = board->grids[(int)boxes[i]->pos.x][(int)boxes[i]->pos.y]->cannotWinGame(currPlayer + 1);
+							moves[boxIndex]->enemyDoesNotNeedGrid = board->grids[(int)boxes[i]->pos.x][(int)boxes[i]->pos.y]->cannotWinGame(!currPlayer + 1);
 							moves[boxIndex]->box->owner = 0;
 							moves[boxIndex]->createsTwoInARow = moves[boxIndex]->box->createsTwoInARow(currPlayer + 1);
 							
-							if (board->grids[(int)boxes[i]->pos.x][(int)boxes[i]->pos.y]->owner != 0)
-								moves[boxIndex]->opensBoardForEnemy = true;
+							
 							boxIndex++;
 						}
 					}
@@ -571,19 +581,26 @@ int main()
 
 					int moveIndex = 0;
 
-
-					for (int i = 0; i < boxIndex; ++i)
+					
+					for (int i = 0; i < boxIndex; ++i)	//Wins game.
 					{
-						if (moves[i]->willWinGame == true && moves[i]->willWinGrid == true)
+						if (moves[i]->willWinGame == true && moves[i]->willWinGrid == true && moves[i])
 						{
 							moves[moveIndex++] = moves[i];
 						}
 					}
+					/*
+
 					if (moveIndex == 0)
 					{
 						for (int i = 0; i < boxIndex; ++i)
 						{
-							if (moves[i]->givesEnemyNextGrid == false && moves[i]->willWinGrid == true && moves[i]->allowsEnemyToBlock == false && moves[i]->opensBoardForEnemy == false)
+							if (moves[i]->willWinGrid == true &&
+								moves[i]->enemyNeedsGridToWin == false &&
+								moves[i]->needGridToWin == false &&
+								moves[i]->givesEnemyNextGrid == false &&
+								moves[i]->opensBoardForEnemy == false &&
+								moves[i]->allowsEnemyToBlock == false)
 							{
 								moves[moveIndex++] = moves[i];
 							}
@@ -593,7 +610,12 @@ int main()
 					{
 						for (int i = 0; i < boxIndex; ++i)
 						{
-							if (moves[i]->givesEnemyNextGrid == false && moves[i]->willWinGrid == true && moves[i]->allowsEnemyToBlock == true && moves[i]->opensBoardForEnemy == false)
+							if (moves[i]->willWinGrid == true &&
+								moves[i]->enemyNeedsGridToWin == false &&
+								moves[i]->needGridToWin == false &&
+								moves[i]->givesEnemyNextGrid == false &&
+								moves[i]->opensBoardForEnemy == false &&
+								moves[i]->allowsEnemyToBlock == true)
 							{
 								moves[moveIndex++] = moves[i];
 							}
@@ -603,7 +625,24 @@ int main()
 					{
 						for (int i = 0; i < boxIndex; ++i)
 						{
-							if (moves[i]->givesEnemyNextGrid == false && moves[i]->willWinGrid == true && moves[i]->opensBoardForEnemy == false)
+							if (moves[i]->willWinGrid == true &&
+								moves[i]->needGridToWin == false &&
+								moves[i]->givesEnemyNextGrid == true &&
+								moves[i]->enemyDoesNotNeedGrid == true &&
+								moves[i]->opensBoardForEnemy == false)
+							{
+								moves[moveIndex++] = moves[i];
+							}
+						}
+					}
+
+					if (moveIndex == 0)
+					{
+						for (int i = 0; i < boxIndex; ++i)
+						{
+							if (moves[i]->givesEnemyNextGrid == false &&
+								moves[i]->opensBoardForEnemy == false &&
+								moves[i]->createsTwoInARow == true)
 							{
 								moves[moveIndex++] = moves[i];
 							}
@@ -613,7 +652,8 @@ int main()
 					{
 						for (int i = 0; i < boxIndex; ++i)
 						{
-							if (moves[i]->givesEnemyNextGrid == false && moves[i]->createsTwoInARow == true && moves[i]->allowsEnemyToBlock == false && moves[i]->opensBoardForEnemy == false)
+							if (moves[i]->givesEnemyNextGrid == false &&
+								moves[i]->opensBoardForEnemy == false)
 							{
 								moves[moveIndex++] = moves[i];
 							}
@@ -623,7 +663,121 @@ int main()
 					{
 						for (int i = 0; i < boxIndex; ++i)
 						{
-							if (moves[i]->givesEnemyNextGrid == false && moves[i]->createsTwoInARow == true && moves[i]->allowsEnemyToBlock == true && moves[i]->opensBoardForEnemy == false)
+							if (moves[i]->givesEnemyNextGrid == true &&
+								moves[i]->enemyDoesNotNeedGrid == true)
+							{
+								moves[moveIndex++] = moves[i];
+							}
+						}
+					}
+					if (moveIndex == 0)
+					{
+						for (int i = 0; i < boxIndex; ++i)
+						{
+							if (moves[i]->givesEnemyNextGrid == true &&
+								moves[i]->enemyNeedsGridToWin == false)
+							{
+								moves[moveIndex++] = moves[i];
+							}
+						}
+					}
+
+					if (moveIndex == 0)
+					{
+						moveIndex = boxIndex;
+					}
+
+					boxToPlay = rand() % moveIndex;
+					*/
+					/*
+					if (moveIndex == 0)
+					{
+						for (int i = 0; i < boxIndex; ++i)	//Wins game.
+						{
+							if (moves[i]->willWinGrid == true)
+							{
+								moves[moveIndex++] = moves[i];
+							}
+						}
+						if (moveIndex != 0)
+						{
+							for (int i = 0; i < boxIndex; ++i)
+							{
+								if (moves[i]->enemyNeedsGridToWin == false && moves[i]->doNotNeedGrid == true && moves[i]->opensBoardForEnemy == false)
+								{
+									moves[moveIndex++] = moves[i];
+								}
+							}
+						}
+					}
+					if (moveIndex == 0)
+					{
+						for (int i = 0; i < boxIndex; ++i)
+						{
+							if (moves[i]->givesEnemyNextGrid == false && moves[i]->opensBoardForEnemy == false && moves[i]->allowsEnemyToBlock == false)
+							{
+								moves[moveIndex++] = moves[i];
+							}
+						}
+					}
+					if (moveIndex == 0)
+					{
+						for (int i = 0; i < boxIndex; ++i)
+						{
+							if (moves[i]->enemyNeedsGridToWin == false && moves[i]->opensBoardForEnemy == false && moves[i]->allowsEnemyToBlock == false)
+							{
+								moves[moveIndex++] = moves[i];
+							}
+						}
+					}
+					*/
+
+					
+					if (moveIndex == 0)	//Wins grid, doesn’t give enemy next grid, doesn’t allow enemy to block, and doesn’t lead to a claimed grid.
+					{
+						for (int i = 0; i < boxIndex; ++i)
+						{
+							if (moves[i]->willWinGrid == true && moves[i]->givesEnemyNextGrid == false && moves[i]->allowsEnemyToBlock == false && moves[i]->opensBoardForEnemy == false)
+							{
+								moves[moveIndex++] = moves[i];
+							}
+						}
+					}
+					if (moveIndex == 0) //Wins grid, doesn’t give enemy next grid, allows enemy to block, and doesn’t lead to a claimed grid.
+					{
+						for (int i = 0; i < boxIndex; ++i)
+						{
+							if (moves[i]->willWinGrid == true && moves[i]->givesEnemyNextGrid == false && moves[i]->allowsEnemyToBlock == true && moves[i]->opensBoardForEnemy == false)
+							{
+								moves[moveIndex++] = moves[i];
+							}
+						}
+					}
+					if (moveIndex == 0)	//Wins grid, doesn’t give enemy next grid, and doesn’t lead to a claimed grid.
+					{
+						for (int i = 0; i < boxIndex; ++i)
+						{
+							if (moves[i]->willWinGrid == true && moves[i]->givesEnemyNextGrid == false && moves[i]->opensBoardForEnemy == false)
+							{
+								moves[moveIndex++] = moves[i];
+							}
+						}
+					}
+					if (moveIndex == 0)	//Creates two-in-a-row, doesn’t give enemy next grid, doesn’t allow enemy to block, and doesn’t lead to a claimed grid.
+					{
+						for (int i = 0; i < boxIndex; ++i)
+						{
+							if (moves[i]->createsTwoInARow == true && moves[i]->givesEnemyNextGrid == false && moves[i]->allowsEnemyToBlock == false && moves[i]->opensBoardForEnemy == false)
+							{
+								moves[moveIndex++] = moves[i];
+							}
+						}
+					}
+					if (moveIndex == 0)	//Creates two-in-a-row, doesn’t give enemy next grid, allows enemy to block, and doesn’t lead to a claimed grid.
+					{
+						for (int i = 0; i < boxIndex; ++i)
+						{
+							if (moves[i]->createsTwoInARow == true && moves[i]->givesEnemyNextGrid == false && moves[i]->allowsEnemyToBlock == true && moves[i]->opensBoardForEnemy == false)
 							{
 								moves[moveIndex++] = moves[i];
 							}
@@ -679,6 +833,7 @@ int main()
 							}
 						}
 					}
+					
 					if (moveIndex == 0)
 					{
 						for (int i = 0; i < boxIndex; ++i)
@@ -699,6 +854,7 @@ int main()
 							}
 						}
 					}
+
 					if (moveIndex == 0)
 					{
 						for (int i = 0; i < boxIndex; ++i)
@@ -707,6 +863,11 @@ int main()
 						}
 					}
 					boxIndex = 0;
+					boxToPlay = (int)(rand() % moveIndex);
+					
+					
+					
+					/*
 					for (int i = 0; i < moveIndex; ++i)
 					{
 						if ((int)moves[i]->box->pos.x == 1 && (int)moves[i]->box->pos.y == 1)
@@ -726,6 +887,7 @@ int main()
 							}
 						}
 					}
+					
 					if (boxIndex != 0 && boxToPlay == -1)
 					{
 						boxToPlay = (int)(rand() % boxIndex);
@@ -734,8 +896,16 @@ int main()
 					{
 						boxToPlay = (int)(rand() % moveIndex);
 					}
-
-					printf("\n\nMove...\n");
+					*/
+					/*
+					if (currPlayer == 0)
+					{
+						printf("\n\nP1: ");
+					}
+					else {
+						printf("\n\nP2: ");
+					}
+					printf(" Move...\n");
 					bool nothing = true;
 					if (moves[boxToPlay]->willWinGame)
 					{
@@ -794,6 +964,7 @@ int main()
 							printf("	Has no downside.\n");
 						}
 					}
+					*/
 						
 					int row = moves[boxToPlay]->box->pos.x;
 					int col = moves[boxToPlay]->box->pos.y;

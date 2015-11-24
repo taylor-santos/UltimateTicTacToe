@@ -1,9 +1,9 @@
 ﻿  main.cpp
-c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(446): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(506): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(515): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(798): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(799): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(966): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(967): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(450): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(510): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(519): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(968): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(969): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(1136): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(1137): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
   UltimateTicTacToe.vcxproj -> C:\Users\Taylor\Documents\GitHub\UltimateTicTacToe\Debug\UltimateTicTacToe.exe
