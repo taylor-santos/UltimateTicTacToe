@@ -1,9 +1,24 @@
 ﻿  main.cpp
-c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(450): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(510): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(519): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(968): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(969): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(1136): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(1137): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  UltimateTicTacToe.vcxproj -> C:\Users\Taylor\Documents\GitHub\UltimateTicTacToe\Debug\UltimateTicTacToe.exe
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(10): error C2377: 'SIZE': redefinition; typedef cannot be overloaded with any other symbol
+  c:\program files (x86)\windows kits\8.1\include\shared\windef.h(190): note: see declaration of 'SIZE'
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(13): error C2143: syntax error: missing ';' before '*'
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(13): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(13): error C2238: unexpected token(s) preceding ';'
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(17): error C2143: syntax error: missing ';' before '*'
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(17): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(17): error C2238: unexpected token(s) preceding ';'
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(31): error C2065: 'boxes': undeclared identifier
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(31): error C2227: left of '->owner' must point to class/struct/union/generic type
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(34): error C2065: 'boxes': undeclared identifier
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(34): error C2227: left of '->owner' must point to class/struct/union/generic type
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(37): error C2065: 'boxes': undeclared identifier
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(37): error C2227: left of '->owner' must point to class/struct/union/generic type
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(48): error C2065: 'boxes': undeclared identifier
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(48): error C2227: left of '->owner' must point to class/struct/union/generic type
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(51): error C2065: 'boxes': undeclared identifier
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(51): error C2227: left of '->owner' must point to class/struct/union/generic type
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(54): error C2065: 'boxes': undeclared identifier
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(54): error C2227: left of '->owner' must point to class/struct/union/generic type
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(69): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(131): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(132): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
