@@ -11,13 +11,17 @@ int nodeCount = 0;
 
 struct box {
 	int owner;
-	struct grid* grid;
+	//struct grid* grid;
 	int posX;
 	int posY;
 
 	box()
 	{
 		owner = 0;
+	}
+
+	~box()
+	{
 	}
 };
 
@@ -41,11 +45,15 @@ struct grid {
 			for (int x = 0; x < 3; ++x)
 			{
 				boxes[x][y] = new box();
-				boxes[x][y]->grid = this;
+				//boxes[x][y]->grid = this;
 				boxes[x][y]->posX = x;
 				boxes[x][y]->posY = y;
 			}
 		}
+	}
+	~grid()
+	{
+		delete[9] boxes;
 	}
 };
 
@@ -78,92 +86,39 @@ struct board {
 			}
 		}
 	}
+	~board()
+	{
+		delete[9] grids;
+	}
 };
 
 
 
 struct move {
-	box* box;
 	move* next;
-	move* prev;
-	int player;
 	struct node* result;
-	struct node* parentNode;
-
-	node* getNextMoves(int depth);
 
 	move()
 	{
 		next = NULL;
 		result = NULL;
-		box = NULL;
-		player = 0;
 	}
 };
 
 struct node {
 	move* first;
-	board* board;
-	int moveCount;
-	int P1Value;
-	int P2Value;
+	int player;
+	int value;
 
-	node(struct board* newBoard) {
+	node() {
 		first = NULL;
-		board = newBoard;
-		moveCount = 0;
-		P1Value = 0;
-		P2Value = 0;
-		if (board->owner == 1)
-		{
-			P1Value = INT_MAX;
-			P2Value = 0;
-		}
-		else if (board->owner == 2)
-		{
-			P1Value = 0;
-			P2Value = INT_MAX;
-		}
-		else {
-			
-			if (board->hasTwoInARow(1))
-				P1Value += 50;
-			if (board->hasTwoInARow(2))
-				P2Value += 50;
-			for (int y = 0; y < 3; ++y)
-			{
-				for (int x = 0; x < 3; ++x)
-				{
-					if (board->grids[x][y]->owner == 1)
-						P1Value += 50;
-					if (board->grids[x][y]->owner == 2)
-						P2Value += 50;
-					if (board->grids[x][y]->hasTwoInARow(1))
-						P1Value += 10;
-					if (board->grids[x][y]->hasTwoInARow(2))
-						P2Value += 10;
-					bool possible1 = board->grids[x][y]->possibleToWin(1);
-					bool possible2 = board->grids[x][y]->possibleToWin(2);
-					if (possible1 || possible2)
-					{
-						for (int boxY = 0; boxY < 3; ++boxY)
-						{
-							for (int boxX = 0; boxX < 3; ++boxX)
-							{
-								if (board->grids[x][y]->boxes[boxX][boxY]->owner == 1 && possible1)
-									P1Value += 1;
-								if (board->grids[x][y]->boxes[boxX][boxY]->owner == 2 && possible2)
-									P2Value += 1;
-							}
-						}
-					}
-				}
-			}
-		}
+		value = 0;
 	}
 };
 
-int alphabeta(node* node, int depth, int a, int b, int player, bool maximizing);
+int alphabeta(node* node, int depth, int a, int b, bool maximizing);
+
+void getNextMoves(node* node, board* currBoard, int depth);
 
 int main()
 {
@@ -217,6 +172,19 @@ int main()
 
 	board* board = new struct board();
 
+	/*
+	board->grids[0][0]->boxes[0][0]->owner = 2;
+	board->grids[0][0]->boxes[1][0]->owner = 2;
+	board->grids[0][0]->boxes[2][0]->owner = 2;
+	board->grids[1][0]->boxes[0][0]->owner = 2;
+	board->grids[1][0]->boxes[1][0]->owner = 2;
+	board->grids[1][0]->boxes[2][0]->owner = 2;
+	board->grids[2][0]->boxes[0][0]->owner = 2;
+	board->grids[2][0]->boxes[1][0]->owner = 2;
+	board->updateBoard();
+	*/
+
+
 	int currPlayer = 0;
 	bool mouseDown = false;
 
@@ -233,87 +201,64 @@ int main()
 //AI
 		if (currPlayer == 1 && board->owner == 0)
 		{
-			struct board* newBoard = new struct board();
-			newBoard = board->copy();
-			node* root = new node(newBoard);
-			move* currMove = (move*)malloc(sizeof(move));
-			currMove = NULL;
-			for (int gridY = 0; gridY < 3; ++gridY)
+			//struct board* newBoard = new struct board();
+			//newBoard = board->copy();
+			node* root = new node();
+			root->player = currPlayer + 1;
+
+			nodeCount = 0;
+			getNextMoves(root, board, 2);
+
+			move* moveWalker = root->first;
+			int max = INT_MIN;
+			move* chosenMove = moveWalker;
+			int index = 0;
+			int chosenIndex;
+			while (moveWalker != NULL)
 			{
-				for (int gridX = 0; gridX < 3; ++gridX)
+				int val = alphabeta(moveWalker->result, 3, INT_MIN, INT_MAX, false);
+				if (val > max)
 				{
-					if (root->board->playableGrid == -1 || root->board->playableGrid == 3 * gridY + gridX)
+					max = val;
+					chosenMove = moveWalker;
+					chosenIndex = index;
+				}
+
+				index++;
+				moveWalker = moveWalker->next;
+			}
+			printf("%d\n", max);
+			index = 0;
+			struct box* chosenBox;
+			bool found = false;
+			for (int gridY = 0; gridY < 3 && found == false; ++gridY)
+			{
+				for (int gridX = 0; gridX < 3 && found == false; ++gridX)
+				{
+					if (board->grids[gridX][gridY]->owner == 0 && (board->playableGrid == 3*gridY+gridX || board->playableGrid == -1) && found == false)
 					{
-						for (int boxY = 0; boxY < 3; ++boxY)
+						for (int boxY = 0; boxY < 3 && found == false; ++boxY)
 						{
-							for (int boxX = 0; boxX < 3; ++boxX)
+							for (int boxX = 0; boxX < 3 && found == false; ++boxX)
 							{
-								if (root->board->grids[gridX][gridY]->boxes[boxX][boxY]->owner == 0)
+								if (board->grids[gridX][gridY]->boxes[boxX][boxY]->owner == 0 && found == false)
 								{
-									move* newMove = new move();
-									newMove->box = root->board->grids[gridX][gridY]->boxes[boxX][boxY];
-									newMove->player = currPlayer + 1;
-									newMove->next = NULL;
-									newMove->parentNode = root;
-									if (currMove == NULL)
+									if (index == chosenIndex && found == false)
 									{
-										currMove = newMove;
-										root->first = newMove;
-										currMove->prev = NULL;
+										board->grids[gridX][gridY]->boxes[boxX][boxY]->owner = currPlayer+1;
+										board->playableGrid = 3 * boxY + boxX;
+										if (board->grids[boxX][boxY]->owner != 0)
+											board->playableGrid = -1;
+										found = true;
 									}
-									else {
-										newMove->prev = currMove;
-										currMove->next = newMove;
-										currMove = currMove->next;
-									}
-									root->moveCount++;
+									index++;
 								}
 							}
 						}
 					}
 				}
 			}
-			nodeCount = 0;
-			int values[81];
-			if (root->board->owner == 0)
-			{
-				move* moveWalker = root->first;
-				for (int i = 0; i < root->moveCount; ++i)
-				{
-					moveWalker->result = moveWalker->getNextMoves(3);
-					values[i] = alphabeta(moveWalker->result, 3, INT_MIN, INT_MAX, !currPlayer+1, true);
-					moveWalker = moveWalker->next;
-				}
-			}
-			int max = INT_MIN;
-			move* moves[81];
-			int moveCounter = 0;
-			move* moveWalker = root->first;
-			for (int i = 0; i < root->moveCount; ++i)
-			{
-				if (values[i] > max)
-				{
-					max = values[i];
-					moves[moveCounter++] = moveWalker;
-				}
-				moveWalker = moveWalker->next;
-			}
-
-			printf("%d\n", max);
-			
-			int randMove = rand() % moveCounter;
-
-			moveWalker = root->first;
-			for (int i = 0; i < randMove; ++i)
-			{
-				moveWalker = moveWalker->next;
-			}
-
-			board->grids[moveWalker->box->grid->posX][moveWalker->box->grid->posY]->boxes[moveWalker->box->posX][moveWalker->box->posY]->owner = currPlayer + 1;
-			board->playableGrid = 3 * moveWalker->box->posY + moveWalker->box->posX;
-			if (board->grids[moveWalker->box->posX][moveWalker->box->posY]->owner != 0)
-				board->playableGrid = -1;
-
+			printf("%d\n", nodeCount);
 			currPlayer = !currPlayer;
 		}
 //PLAYER
@@ -377,22 +322,151 @@ int main()
 	return 0;
 }
 
-int alphabeta(node* node, int depth, int a, int b, int player, bool maximizing)
+void getNextMoves(node* node, board* currBoard, int depth)
+{
+	//node->moveCount = 0;
+	move* moveWalker = NULL;
+	nodeCount++;
+	for (int gridY = 0; gridY < 3; ++gridY)
+	{
+		for (int gridX = 0; gridX < 3; ++gridX)
+		{
+			if (currBoard->grids[gridX][gridY]->owner == 0)
+			{
+				if (currBoard->playableGrid == 3 * gridY + gridX || currBoard->playableGrid == -1)
+				{
+					for (int boxY = 0; boxY < 3; boxY++)
+					{
+						for (int boxX = 0; boxX < 3; boxX++)
+						{
+							if (currBoard->grids[gridX][gridY]->boxes[boxX][boxY]->owner == 0)
+							{
+								move* newMove = new move();
+								newMove->next = NULL;
+								//newMove->parentNode = node;
+								if (moveWalker == NULL)
+								{
+									moveWalker = newMove;
+									node->first = newMove;
+									//moveWalker->prev = NULL;
+								}
+								else {
+									//newMove->prev = moveWalker;
+									moveWalker->next = newMove;
+									moveWalker = moveWalker->next;
+								}
+								struct board* newBoard = new struct board();
+								newBoard = currBoard->copy();
+								newBoard->grids[gridX][gridY]->boxes[boxX][boxY]->owner = node->player;
+								newBoard->updateBoard();
+
+								newBoard->playableGrid = 3 * boxY + boxX;
+								if (newBoard->grids[boxX][boxY]->owner != 0)
+								{
+									newBoard->playableGrid = -1;
+								}
+								struct node* newNode = new struct node();
+								newNode->player = !(node->player - 1) + 1;
+								moveWalker->result = newNode;
+
+								if (newBoard->owner == newNode->player)
+								{
+									newNode->value = INT_MAX;
+								}
+								else if (newBoard->owner != 0){
+									newNode->value = 0;
+								} else {
+
+									if (newBoard->hasTwoInARow(newNode->player))
+									{
+										newNode->value += 50;
+									}
+									if (newBoard->hasTwoInARow(!(newNode->player-1)+1))
+									{
+										newNode->value -= 25;
+									}
+									for (int y = 0; y < 3; ++y)
+									{
+										for (int x = 0; x < 3; ++x)
+										{
+											if (newBoard->grids[x][y]->owner == newNode->player)
+											{
+												newNode->value += 50;
+											}else if (newBoard->grids[x][y]->owner == !(newNode->player-1)+1)
+											{
+												newNode->value -= 25;
+											}
+											if (newBoard->grids[x][y]->hasTwoInARow(newNode->player))
+												newNode->value += 10;
+											bool possible1 = newBoard->grids[x][y]->possibleToWin(1);
+											if (newBoard->grids[x][y]->possibleToWin(newNode->player))
+											{
+												for (int boxY = 0; boxY < 3; ++boxY)
+												{
+													for (int boxX = 0; boxX < 3; ++boxX)
+													{
+														if (newBoard->grids[x][y]->boxes[boxX][boxY]->owner == newNode->player)
+															newNode->value += 1;
+													}
+												}
+											}
+										}
+									}
+								}
+
+								if (newBoard->owner == 0 && newBoard->playableGrid != -1 && depth > 0)
+								{
+									getNextMoves(newNode, currBoard, depth-1);
+								}
+
+								//delete newMove;
+								/*
+								for (int gX = 0; gX < 3; ++gX)
+								{
+									for (int gY = 0; gY < 3; ++gY)
+									{
+										for (int x = 0; x < 3; ++x)
+										{
+											for (int y = 0; y < 3; ++y)
+											{
+												delete newBoard->grids[gX][gY]->boxes[x][y];
+											}
+										}
+										delete newBoard->grids[gX][gY];
+									}
+								}
+								*/
+								//delete newBoard;
+								//delete newNode;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+int alphabeta(node* node, int depth, int a, int b, bool maximizing)
 {
 	if (node == NULL)
-		return INT_MIN;
-	int value = node->P1Value;
-	if (player == 2)
-		value = node->P2Value;
+	{
+		if (maximizing)
+			return INT_MIN;
+		return INT_MAX;
+	}
+	int value = node->value;
+	if (maximizing == false)
+		value = -value;
 	if (depth == 0 || node == NULL)
 		return value;
 	if (maximizing == true)
 	{
 		int v = INT_MIN;
 		move* moveWalker = node->first;
-		for (int i = 0; i < node->moveCount; ++i)
+		while (moveWalker != NULL)
 		{
-			v = max(v, alphabeta(moveWalker->result, depth - 1, a, b, player, false));
+			v = max(v, alphabeta(moveWalker->result, depth - 1, a, b, false));
 			moveWalker = moveWalker->next;
 			a = max(a, v);
 			if (b <= a)
@@ -403,9 +477,9 @@ int alphabeta(node* node, int depth, int a, int b, int player, bool maximizing)
 	else {
 		int v = INT_MAX;
 		move* moveWalker = node->first;
-		for (int i = 0; i < node->moveCount; ++i)
+		while (moveWalker != NULL)
 		{
-			v = min(v, alphabeta(moveWalker->result, depth - 1, a, b, player, true));
+			v = min(v, alphabeta(moveWalker->result, depth - 1, a, b, true));
 			moveWalker = moveWalker->next;
 			b = min(b, v);
 			if (b <= a)
@@ -510,7 +584,7 @@ void board::updateBoard()
 }
 
 board* board::copy() {
-	board* newBoard = (board*)malloc(sizeof(board));
+	board* newBoard = new board();
 
 	newBoard->playableGrid = playableGrid;
 	newBoard->owner = owner;
@@ -519,7 +593,7 @@ board* board::copy() {
 	{
 		for (int gridX = 0; gridX < 3; ++gridX)
 		{
-			newBoard->grids[gridX][gridY] = (grid*)malloc(sizeof(grid));
+			newBoard->grids[gridX][gridY] = new grid();
 			newBoard->grids[gridX][gridY]->board = this;
 			newBoard->grids[gridX][gridY]->posX = grids[gridX][gridY]->posX;
 			newBoard->grids[gridX][gridY]->posY = grids[gridX][gridY]->posY;
@@ -528,8 +602,8 @@ board* board::copy() {
 			{
 				for (int boxX = 0; boxX < 3; ++boxX)
 				{
-					newBoard->grids[gridX][gridY]->boxes[boxX][boxY] = (box*)malloc(sizeof(box));
-					newBoard->grids[gridX][gridY]->boxes[boxX][boxY]->grid = newBoard->grids[gridX][gridY];
+					newBoard->grids[gridX][gridY]->boxes[boxX][boxY] = new box();
+					//newBoard->grids[gridX][gridY]->boxes[boxX][boxY]->grid = newBoard->grids[gridX][gridY];
 					newBoard->grids[gridX][gridY]->boxes[boxX][boxY]->owner = grids[gridX][gridY]->boxes[boxX][boxY]->owner;
 					newBoard->grids[gridX][gridY]->boxes[boxX][boxY]->posX = grids[gridX][gridY]->boxes[boxX][boxY]->posX;
 					newBoard->grids[gridX][gridY]->boxes[boxX][boxY]->posY = grids[gridX][gridY]->boxes[boxX][boxY]->posY;
@@ -651,65 +725,6 @@ bool grid::hasTwoInARow(int player)
 		return true;
 	}
 	return false;
-}
-
-node* move::getNextMoves(int depth)
-{
-	if (parentNode->board->playableGrid == -1)
-		return NULL;
-	nodeCount++;
-	struct board* newBoard = new struct board();
-	newBoard = parentNode->board->copy();
-	newBoard->grids[box->grid->posX][box->grid->posY]->boxes[box->posX][box->posY]->owner = player;
-	newBoard->updateBoard();
-	node* newNode = new node(newBoard);
-	move* currMove = (move*)malloc(sizeof(move));
-	currMove = NULL;
-	for (int gridY = 0; gridY < 3; ++gridY)
-	{
-		for (int gridX = 0; gridX < 3; ++gridX)
-		{
-			if (parentNode->board->playableGrid == -1 || parentNode->board->playableGrid == 3 * gridY + gridX)
-			{
-				for (int boxY = 0; boxY < 3; ++boxY)
-				{
-					for (int boxX = 0; boxX < 3; ++boxX)
-					{
-						if (parentNode->board->grids[gridX][gridY]->boxes[boxX][boxY]->owner == 0)
-						{
-							move* newMove = new move();
-							newMove->box = newNode->board->grids[gridX][gridY]->boxes[boxX][boxY];
-							newMove->player = !(player-1) + 1;
-							newMove->next = NULL;
-							newMove->parentNode = newNode;
-							if (currMove == NULL)
-							{
-								currMove = newMove;
-								newNode->first = newMove;
-								currMove->prev = NULL;
-							}
-							else {
-								newMove->prev = currMove;
-								currMove->next = newMove;
-								currMove = currMove->next;
-							}
-							newNode->moveCount++;
-						}
-					}
-				}
-			}
-		}
-	}
-	if (depth > 0 && newNode->board->owner == 0 && nodeCount < 30000)
-	{
-		move* moveWalker = newNode->first;
-		for (int i = 0; i < newNode->moveCount; ++i)
-		{
-			moveWalker->result = moveWalker->getNextMoves(depth-1);
-			moveWalker = moveWalker->next;
-		}
-	}
-	return newNode;
 }
 
 int grid::winner()
