@@ -1,5 +1,3 @@
 ﻿  main.cpp
-c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(56): warning C4154: deletion of an array expression; conversion to pointer supplied
-c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(91): warning C4154: deletion of an array expression; conversion to pointer supplied
-c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(232): warning C4101: 'chosenBox': unreferenced local variable
+c:\users\taylor\documents\github\ultimatetictactoe\ultimatetictactoe\main.cpp(225): warning C4715: 'board::value': not all control paths return a value
   UltimateTicTacToe.vcxproj -> C:\Users\Taylor\Documents\GitHub\UltimateTicTacToe\Debug\UltimateTicTacToe.exe
