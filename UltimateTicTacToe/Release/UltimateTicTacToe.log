@@ -1,8 +1,7 @@
 ﻿  main.cpp
-main.cpp(246): warning C4101: 'chosenBox': unreferenced local variable
   Generating code
-  22 of 38 functions (57.9%) were compiled, the rest were copied from previous compilation.
-    20 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
+  2 of 35 functions ( 5.7%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    1 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   UltimateTicTacToe.vcxproj -> C:\Users\Taylor\Documents\GitHub\UltimateTicTacToe\Release\UltimateTicTacToe.exe
