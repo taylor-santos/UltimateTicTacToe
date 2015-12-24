@@ -32,6 +32,10 @@ struct board {
 	int value(int player);
 
 	bool playMove(int gX, int gY, int bX, int bY, int player);
+	bool gridIsWinnable(int gX, int gY, int player);
+	bool playerCanWinGridInOneMove(int gX, int gY, int player);
+	bool playerWillWinGameWithGrid(int gX, int gY, int player);
+	bool gridDoesNotHelpPlayerToWin(int gX, int gY, int player);
 
 	board* copy();
 
@@ -99,7 +103,7 @@ move* getMoves(int player, board* b, int depth, int valuePlayer, bool allowFullG
 
 int alphabeta(move* node, int a, int b, bool maximizing);
 
-void printTree(move* n, int depth);
+void printTree(move* n, int depth, bool max);
 
 int main()
 {
@@ -165,22 +169,23 @@ int main()
 		}
 
 //AI
-		if (currPlayer == 1)
+		if (currPlayer == 1 && b->boardOwner() == 0)
 		{
-			move* root = getMoves(currPlayer, b, 4, currPlayer, true);
-			printTree(root, 0);
+			move* root = getMoves(currPlayer, b, 3, currPlayer, false);
+			//printTree(root, 0);
 			move* moveWalker = root;
 			int index = 0;
 			int chosenIndex = 0;
 			int min = INT_MAX;
 			int max = INT_MIN;
+			//printTree(root, 0, true);
 			while (moveWalker != NULL)
 			{
 				int val;
 				val = alphabeta(moveWalker, INT_MIN, INT_MAX, true);
-				moveWalker->board->printBoard();
-				printf("Value: %d\n\n", val);
-				
+				//moveWalker->board->printBoard();
+				//printf("Value: %d\n\n", val);
+				printf("%d, ", val);
 				if (val > max)
 				{
 					max = val;
@@ -193,20 +198,22 @@ int main()
 				index++;
 				moveWalker = moveWalker->next;
 			}
-			printf("Chosen: %d\nIndex: %d", max, chosenIndex);
+			printf("\n");
+			printf("Chosen: %d\nIndex: %d/%d\n", max, chosenIndex+1, index);
+			
 			//printf("Max: %d\nMin: %d\nChosen: %d\nValue: %d\n", max,min,max,b->value(currPlayer));
 			index = 0;
 			for (int gY = 0; gY < 3; ++gY)
 			{
 				for (int gX = 0; gX < 3; ++gX)
 				{
-					if (b->playableGrid == 3 * gY + gX || b->playableGrid == -1)
+					if ((b->playableGrid == 3 * gY + gX || b->playableGrid == -1) && b->gridOwner(gX, gY) == 0)
 					{
 						for (int bY = 0; bY < 3; ++bY)
 						{
 							for (int bX = 0; bX < 3; ++bX)
 							{
-								if (b->boxes[gX][gY][bX][bY]->owner == 0 && b->gridOwner(bX, bY) == 0)
+								if (b->boxes[gX][gY][bX][bY]->owner == 0)
 								{
 									if (index == chosenIndex)
 									{
@@ -220,11 +227,10 @@ int main()
 					}
 				}
 			}
-			
 			delete root;
 		}
 //PLAYER
-		else if (currPlayer == 0)
+		else if (currPlayer == 0 && b->boardOwner() == 0)
 		{
 			if (Mouse::isButtonPressed(Mouse::Left))
 			{
@@ -327,7 +333,7 @@ int main()
 	return 0;
 }
 
-void printTree(move* n, int depth)
+void printTree(move* n, int depth, bool max)
 {
 	if (n == NULL)
 		return;
@@ -337,7 +343,7 @@ void printTree(move* n, int depth)
 		for (int i = 0; i < depth; ++i)
 			printf("  ");
 		printf("%d\n", nodeWalker->val);
-		printTree(nodeWalker->result, depth + 1);
+		printTree(nodeWalker->result, depth + 1, !max);
 		nodeWalker = nodeWalker->next;
 	}
 }
@@ -374,18 +380,185 @@ void board::printBoard()
 	}
 }
 
+bool board::gridIsWinnable(int gX, int gY, int player)
+{
+	if (this->gridOwner(gX, gY) == player + 1)
+	{
+		return true;
+	}
+	else if (this->gridOwner(gX, gY) == !player + 1)
+	{
+		return false;
+	}
+	else {
+		int owners[3][3];
+		for (int col = 0; col < 3; ++col)
+		{
+			for (int row = 0; row < 3; ++row)
+			{
+				owners[col][row] = boxes[gX][gY][col][row]->owner;
+			}
+		}
+		if (owners[0][0] != !player + 1 && owners[1][1] != !player + 1 && owners[2][2] != !player + 1)	//Diagonal
+		{
+			return true;
+		}
+		if (owners[2][0] != !player + 1 && owners[1][1] != !player + 1 && owners[0][2] != !player + 1)	//Anti-diagonal
+		{
+			return true;
+		}
+		for (int row = 0; row < 3; ++row)
+		{
+			if (owners[0][row] != !player + 1 && owners[1][row] != !player + 1 && owners[2][row] != !player + 1)	//Horizontal
+			{
+				return true;
+			}
+		}
+		for (int col = 0; col < 3; ++col)
+		{
+			if (owners[col][0] != !player + 1 && owners[col][1] != !player + 1 && owners[col][2] != !player + 1)	//Vertical
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+}
+bool board::playerCanWinGridInOneMove(int gX, int gY, int player) {
+	if (this->gridOwner(gX, gY) == player + 1)
+	{
+		return true;
+	}
+	else if (this->gridOwner(gX, gY) == !player + 1)
+	{
+		return false;
+	}
+	else {
+		int owners[3][3];
+		for (int col = 0; col < 3; ++col)
+		{
+			for (int row = 0; row < 3; ++row)
+			{
+				owners[col][row] = boxes[gX][gY][col][row]->owner;
+			}
+		}
+		if ((owners[0][0] == player + 1 && owners[1][1] == player + 1 && owners[2][2] == 0) ||
+			(owners[0][0] == player + 1 && owners[1][1] == 0 && owners[2][2] == player + 1) ||
+			(owners[0][0] == 0 && owners[1][1] == player + 1 && owners[2][2] == player + 1))	//Diagonal
+		{
+			return true;
+		}
+		if ((owners[2][0] == player + 1 && owners[1][1] == player + 1 && owners[0][2] == 0) ||
+			(owners[2][0] == player + 1 && owners[1][1] == 0 && owners[0][2] == player + 1) ||
+			(owners[2][0] == 0 && owners[1][1] == player + 1 && owners[0][2] == player + 1))	//Anti-diagonal
+		{
+			return true;
+		}
+		for (int row = 0; row < 3; ++row)
+		{
+			if ((owners[0][row] == player + 1 && owners[1][row] == player + 1 && owners[2][row] == 0) ||
+				(owners[0][row] == player + 1 && owners[1][row] == 0 && owners[2][row] == player + 1) ||
+				(owners[0][row] == 0 && owners[1][row] == player + 1 && owners[2][row] == player + 1))	//Horizontal
+			{
+				return true;
+			}
+		}
+		for (int col = 0; col < 3; ++col)
+		{
+			if ((owners[col][0] == player + 1 && owners[col][1] == player + 1 && owners[col][2] == 0) ||
+				(owners[col][0] == player + 1 && owners[col][1] == 0 && owners[col][2] == player + 1) ||
+				(owners[col][0] == 0 && owners[col][1] == player + 1 && owners[col][2] == player + 1))	//Vertical
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+}
+bool board::playerWillWinGameWithGrid(int gX, int gY, int player)
+{
+	//DOES NOT IMPLY GRID IS WINNABLE!
+	int gX2 = (gX + 1) % 3;
+	int gX3 = (gX + 2) % 3;
+	int gY2 = (gY + 1) % 3;
+	int gY3 = (gY + 2) % 3;
+	if (gX == gY && gridOwner(gX2, gY2) == player + 1 && gridOwner(gX3, gY3) == player + 1) //Diagonal
+	{
+		return true;
+	}
+	if (gX + gY == 2 && gridOwner(gX2, gY3) == player + 1 && gridOwner(gX3, gY2) == player + 1) //Anti-Diagonal
+	{
+		return true;
+	}
+	if (gridOwner(gX2, gY) == player + 1 && gridOwner(gX3, gY) == player + 1) //Horizontal
+	{
+		return true;
+	}
+	if (gridOwner(gX, gY2) == player + 1 && gridOwner(gX, gY3) == player + 1) //Vertical
+	{
+		return true;
+	}
+	return false;
+}
+bool board::gridDoesNotHelpPlayerToWin(int gX, int gY, int player) {
+	if (gridIsWinnable(gX, gY, player) == false)
+		return true;
+	else {
+		int gX2 = (gX + 1) % 3;
+		int gX3 = (gX + 2) % 3;
+		int gY2 = (gY + 1) % 3;
+		int gY3 = (gY + 2) % 3;
+		if (!(gX == gY && (gridOwner(gX2, gY2) == !player + 1 || gridOwner(gX3, gY3) == !player + 1))) //Diagonal
+		{
+			return false;
+		}
+		if (!(gX + gY == 2 && (gridOwner(gX2, gY3) == !player + 1 || gridOwner(gX3, gY2) == !player + 1))) //Anti-Diagonal
+		{
+			return false;
+		}
+		if (!(gridOwner(gX2, gY) == !player + 1 || gridOwner(gX3, gY) == !player + 1)) //Horizontal
+		{
+			return false;
+		}
+		if (!(gridOwner(gX, gY2) == !player + 1 || gridOwner(gX, gY3) == !player + 1)) //Vertical
+		{
+			return false;
+		}
+		return true;
+	}
+}
+
 int alphabeta(move* node, int a, int b, bool maximizing)
 {
+	int bestValue = 0;
+	if (maximizing)
+		bestValue = INT_MIN;
+	else
+		bestValue = INT_MAX;
+	move* moveWalker = node;
+	while (moveWalker != NULL)
+	{
+		int val = moveWalker->val;
+		if (moveWalker->result != NULL)
+			val = alphabeta(moveWalker->result, a, b, !maximizing);
+		if (maximizing)
+			bestValue = max(bestValue, val);
+		else
+			bestValue = min(bestValue, val);
+		moveWalker = moveWalker->next;
+	}
+	return bestValue;
+	/*
 	int val;
-	if (node->result == NULL)
-		val = node->val;
-	else if (maximizing)
+	if (maximizing)
 	{
 		val = a;
 		move* nodeWalker = node;
 		while (nodeWalker != NULL)
 		{
-			int childValue = alphabeta(nodeWalker->result, val, b, false);
+			int childValue = nodeWalker->val;
+			if (nodeWalker->result != NULL)
+				childValue = alphabeta(nodeWalker->result, val, b, false);
 			val = max(val, childValue);
 			if (b <= val)
 			{
@@ -399,9 +572,11 @@ int alphabeta(move* node, int a, int b, bool maximizing)
 		move* nodeWalker = node;
 		while (nodeWalker != NULL)
 		{
-			int childValue = alphabeta(nodeWalker->result, alpha, val, true);
+			int childValue = nodeWalker->val;
+			if (nodeWalker->result != NULL)
+				childValue = alphabeta(nodeWalker->result, a, val, true);
 			val = min(val, childValue);
-			if (val <= alpha)
+			if (val <= a)
 			{
 				break;
 			}
@@ -409,12 +584,14 @@ int alphabeta(move* node, int a, int b, bool maximizing)
 		}
 	}
 	return val;
+	*/
 }
-
 
 move* getMoves(int player, board* b, int depth, int valuePlayer, bool allowFullGrid)
 {
-	if (depth == 0)
+	if (depth <= 0)
+		return NULL;
+	if (b->boardOwner() != 0)
 		return NULL;
 	move* root = NULL;
 	move* moveWalker = NULL;
@@ -423,14 +600,17 @@ move* getMoves(int player, board* b, int depth, int valuePlayer, bool allowFullG
 	{
 		for (int gX = 0; gX < 3; ++gX)
 		{
-			if (b->playableGrid == 3 * gY + gX || b->playableGrid == -1)
+			if ((b->playableGrid == 3 * gY + gX || b->playableGrid == -1) && b->gridOwner(gX,gY) == 0)
 			{
 				for (int bY = 0; bY < 3; ++bY)
 				{
 					for (int bX = 0; bX < 3; ++bX)
 					{
-						if (b->boxes[gX][gY][bX][bY]->owner == 0 && b->gridOwner(bX,bY) == 0)
+						if (b->boxes[gX][gY][bX][bY]->owner == 0 && (b->gridOwner(bX,bY) == 0 || allowFullGrid == true))
 						{
+							int depthSub = 1;
+							if (b->playableGrid == -1)
+								depthSub++;
 							if (moveWalker == NULL)
 							{
 								moveWalker = new move(player);
@@ -445,13 +625,8 @@ move* getMoves(int player, board* b, int depth, int valuePlayer, bool allowFullG
 							newBoard->playMove(gX, gY, bX, bY, player);
 							moveWalker->val = newBoard->value(valuePlayer);
 							moveWalker->board = newBoard;
-							if (moveWalker->val == INT_MAX)
-								newBoard->printBoard();
-							if (moveWalker->val > maxValue)
-								maxValue = moveWalker->val;
-							if (moveWalker->val < minValue)
-								minValue = moveWalker->val;
-							moveWalker->result = getMoves(!player, newBoard, depth - 1, valuePlayer, false);
+							if (newBoard->boardOwner() == 0)
+								moveWalker->result = getMoves(!player, newBoard, depth - depthSub, valuePlayer, false);
 							//delete newBoard;
 						}
 					}
@@ -461,6 +636,7 @@ move* getMoves(int player, board* b, int depth, int valuePlayer, bool allowFullG
 	}
 	return root;
 }
+
 board* board::copy()
 {
 	board* newBoard = new board();
@@ -480,57 +656,162 @@ board* board::copy()
 	}
 	return newBoard;
 }
+
 int board::value(int player)
 {
 	if (boardOwner() == player + 1)
 	{
 		return INT_MAX;
 	}
-	if (boardOwner() == (!player) + 1)
+	else if (boardOwner() == !player + 1)
 	{
 		return INT_MIN;
 	}
-	int val = 0;
-	for (int x = 0; x < 3; ++x)
-	{
-		for (int y = 0; y < 3; ++y)
+	else {
+		int val = 0;
+		for (int gY = 0; gY < 3; ++gY)
 		{
-			if (gridOwner(x, y) == player + 1)
+			for (int gX = 0; gX < 3; ++gX)
 			{
-				val += 100;
-			}else if (gridOwner(x, y) == (!player) + 1)
-			{
-				val -= 100;
-			}
-			else {
-				int boxOwnerCount = 0;
-				int enemyBoxOwnerCount = 0;
-				for (int bX = 0; bX < 3; bX++)
+				if (gridOwner(gX, gY) == player + 1)
 				{
-					for (int bY = 0; bY < 3; ++bY)
+					val += 100;
+				}
+				else if (gridOwner(gX, gY) == !player + 1)
+				{
+					val -= 100;
+				}
+				else if (gridOwner(gX, gY) == 0)
+				{
+					if (playerCanWinGridInOneMove(gX, gY, player))
 					{
-						if (boxes[x][y][bX][bY]->owner == player + 1)
-							boxOwnerCount++;
-						else if (boxes[x][y][bX][bY]->owner == !player + 1)
-							enemyBoxOwnerCount++;
+						val += 20;
+					}
+					else if (playerCanWinGridInOneMove(gX, gY, !player))
+					{
+						val -= 20;
 					}
 				}
-				if (boxOwnerCount > 1)
-					val += 2 * boxOwnerCount;
-				if (enemyBoxOwnerCount > 1)
-					val -= enemyBoxOwnerCount;
+			}
+		}
+		return val;
+	}
+	/*
+	if (boardOwner() == player + 1)
+	{
+		return INT_MAX;
+	}
+	int val = 0;
+	for (int gY = 0; gY < 3; ++gY)
+	{
+		for (int gX = 0; gX < 3; ++gX)
+		{
+			if (gridOwner(gX, gY) == player + 1)
+			{
+				val += 100;
+			}
+			else if (gridOwner(gX, gY) == 0)
+			{
+				int boxCount = 0;
+				for (int bY = 0; bY < 3; ++bY)
+				{
+					for (int bX = 0; bX < 3; ++bX)
+					{
+						if (boxes[gX][gY][bX][bY]->owner == player + 1)
+						{
+							boxCount++;
+						}
+					}
+				}
+				if (boxCount > 1)
+				{
+					val += (boxCount-1)*10;
+				}
 			}
 		}
 	}
 	return val;
+	*/
 }
+/*
+int board::value(int player)
+{
+	int val = 0;
+	if (boardOwner() == player + 1)
+	{
+		return INT_MAX;
+	}
+	for (int gY = 0; gY < 3; ++gY)
+	{
+		for (int gX = 0; gX < 3; ++gX)
+		{
+			if (gridOwner(gX, gY) == player + 1)
+			{
+				val += 100000;
+			}
+			if (gridOwner(gX, gY) != !player + 1 && gridOwner(gX, gY) != -1)
+			{
+				if (playerWillWinGameWithGrid(gX, gY, player))
+				{
+					val += 1000;
+					if (playerCanWinGridInOneMove(gX, gY, player))
+					{
+						val += 100;
+					}
+				}
+
+				if (gridOwner(gX, gY) == !player + 1 && gridDoesNotHelpPlayerToWin(gX, gY, !player) == true)
+				{
+					val += 50;
+				}
+
+				if (gridDoesNotHelpPlayerToWin(gX, gY, player) == false)	//Winning grid helps towards winning game. Also implies grid can be won
+				{
+					if (gridOwner(gX, gY) == player + 1)
+					{
+						val += 200;
+					}
+					if (playerCanWinGridInOneMove(gX, gY, player) == true)
+					{
+						val += 150;
+					}
+					else {
+						val += 100;
+					}
+				}
+				else {
+					//Grid does not help win game
+					if (playerWillWinGameWithGrid(gX, gY, !player) && gridOwner(gX, gY) == player)
+					{
+						val += 50;
+					}
+				}
+			}
+			/*
+			for (int bX = 0; bX < 3; ++bX)
+			{
+				for (int bY = 0; bY < 3; ++bY)
+				{
+
+				}
+			}
+			*/
+/*
+		}
+	}
+
+	
+	return val;
+}
+
+*/
 bool board::playMove(int gX, int gY, int bX, int bY, int player)
 {
 	if (playableGrid != 3 * gY + gX && playableGrid != -1)
 	{
 		return false;
 	}
-	if (gridOwner(gX, gY) != 0)
+	if (gridOwner(gX, gY) > 0)
 	{
 		return false;
 	}
@@ -540,7 +821,7 @@ bool board::playMove(int gX, int gY, int bX, int bY, int player)
 	}
 	else {
 		boxes[gX][gY][bX][bY]->owner = player + 1;
-		if (gridOwner(bX, bY) != 0)
+		if (gridOwner(bX, bY) > 0)
 		{
 			playableGrid = -1;
 		}
@@ -553,13 +834,18 @@ bool board::playMove(int gX, int gY, int bX, int bY, int player)
 int board::gridOwner(int x, int y)
 {
 	int owners[3][3];
+	bool tie = true;
 	for (int col = 0; col < 3; ++col)
 	{
 		for (int row = 0; row < 3; ++row)
 		{
 			owners[col][row] = boxes[x][y][col][row]->owner;
+			if (owners[col][row] == 0)
+				tie = false;
 		}
 	}
+	if (tie)
+		return -1;
 	if (owners[0][0] == owners[1][1] && owners[0][0] == owners[2][2] && owners[0][0] != 0)	//Diagonal
 	{
 		return owners[0][0];
