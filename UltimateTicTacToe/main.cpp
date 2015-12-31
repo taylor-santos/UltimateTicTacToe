@@ -1,5 +1,6 @@
 #include <Windows.h>
 #include <SFML/Graphics.hpp>
+#include <fstream>
 using namespace sf;
 
 Color color1 = Color::Red;
@@ -103,7 +104,7 @@ move* getMoves(int player, board* b, int depth, int valuePlayer, bool allowFullG
 
 int alphabeta(move* node, int a, int b, bool maximizing);
 
-void printTree(move* n, int depth, bool max);
+void printTree(move* n, std::ofstream& file, int player, int depth);
 
 int main()
 {
@@ -171,8 +172,10 @@ int main()
 //AI
 		if (currPlayer == 1 && b->boardOwner() == 0)
 		{
-			move* root = getMoves(currPlayer, b, 3, currPlayer, false);
-			//printTree(root, 0);
+			move* root = getMoves(currPlayer, b, 6, currPlayer, false);
+			std::ofstream file("moves.txt");
+			printTree(root, file, currPlayer, 0);
+			file.close();
 			move* moveWalker = root;
 			int index = 0;
 			int chosenIndex = 0;
@@ -333,7 +336,45 @@ int main()
 	return 0;
 }
 
-void printTree(move* n, int depth, bool max)
+void printBoardToFile(board* b, int depth, int player, std::ofstream& file)
+{
+	for (int gY = 0; gY < 3; ++gY)
+	{
+		for (int bY = 0; bY < 3; bY++)
+		{
+			for (int i = 0; i < depth; ++i)
+				file << "	";
+			for (int gX = 0; gX < 3; ++gX)
+			{
+				for (int bX = 0; bX < 3; bX++)
+				{
+					if (b->boxes[gX][gY][bX][bY]->owner == 1)
+					{
+						file << "X";
+					}
+					else if (b->boxes[gX][gY][bX][bY]->owner == 2)
+					{
+						file << "O";
+					}
+					else {
+						file << " ";
+					}
+				}
+				if (gX < 2)
+					file << "|";
+			}
+			file << "\n";
+		}
+		if (gY < 2)
+		{
+			for (int i = 0; i < depth; ++i)
+				file << "	";
+			file << "---+---+---\n";
+		}
+	}
+}
+
+void printTree(move* n, std::ofstream& file, int player, int depth)
 {
 	if (n == NULL)
 		return;
@@ -341,9 +382,16 @@ void printTree(move* n, int depth, bool max)
 	while (nodeWalker != NULL)
 	{
 		for (int i = 0; i < depth; ++i)
-			printf("  ");
-		printf("%d\n", nodeWalker->val);
-		printTree(nodeWalker->result, depth + 1, !max);
+			file << "	";
+		file << nodeWalker->board->value(player) << "\n";
+		for (int i = 0; i < depth; ++i)
+			file << "	";
+		file << "{\n";
+		printBoardToFile(nodeWalker->board, depth, player, file);
+		printTree(nodeWalker->result, file, player, depth + 1);
+		for (int i = 0; i < depth; ++i)
+			file << "	";
+		file << "}\n";
 		nodeWalker = nodeWalker->next;
 	}
 }

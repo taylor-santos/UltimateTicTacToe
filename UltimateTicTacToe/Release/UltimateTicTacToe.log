@@ -1,4 +1,4 @@
-﻿Build started 12/20/2015 4:00:47 PM.
+﻿Build started 12/30/2015 1:30:31 PM.
      1>Project "C:\Users\Taylor\Documents\GitHub\UltimateTicTacToe\UltimateTicTacToe\UltimateTicTacToe.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /I"C:\Users\Taylor\Documents\GitHub\UltimateTicTacToe\UltimateTicTacToe\SFML-2.3.2\bin" /I"C:\Users\Taylor\Documents\GitHub\UltimateTicTacToe\UltimateTicTacToe\SFML-2.3.2\include" /Zi /nologo /W3 /WX- /sdl /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Release\\" /Fd"Release\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
@@ -6,13 +6,13 @@
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Taylor\Documents\GitHub\UltimateTicTacToe\Release\UltimateTicTacToe.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:"C:\Users\Taylor\Documents\GitHub\UltimateTicTacToe\UltimateTicTacToe\SFML-2.3.2\bin" /LIBPATH:"C:\Users\Taylor\Documents\GitHub\UltimateTicTacToe\UltimateTicTacToe\SFML-2.3.2\lib" "sfml-graphics.lib" "sfml-window.lib" "sfml-system.lib" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"C:\Users\Taylor\Documents\GitHub\UltimateTicTacToe\Release\UltimateTicTacToe.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG:incremental /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Taylor\Documents\GitHub\UltimateTicTacToe\Release\UltimateTicTacToe.lib" /MACHINE:X86 /SAFESEH Release\main.obj
          Generating code
-         2 of 34 functions ( 5.9%) were compiled, the rest were copied from previous compilation.
+         2 of 161 functions ( 1.2%) were compiled, the rest were copied from previous compilation.
            0 functions were new in current compilation
-           0 functions had inline decision re-evaluated but remain unchanged
+           1 functions had inline decision re-evaluated but remain unchanged
          Finished generating code
          UltimateTicTacToe.vcxproj -> C:\Users\Taylor\Documents\GitHub\UltimateTicTacToe\Release\UltimateTicTacToe.exe
      1>Done Building Project "C:\Users\Taylor\Documents\GitHub\UltimateTicTacToe\UltimateTicTacToe\UltimateTicTacToe.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:00.92
+Time Elapsed 00:00:00.94
